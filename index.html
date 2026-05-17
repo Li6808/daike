@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>教师请假代课单生成器</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:#f4f6f8;
+  font-family:-apple-system,BlinkMacSystemFont,"Microsoft YaHei",Arial,sans-serif;
+  color:#111;
+}
+.header{
+  background:#1677ff;
+  color:#fff;
+  padding:18px 16px;
+  text-align:center;
+}
+.header h1{font-size:22px;margin:0 0 6px}
+.header p{font-size:13px;margin:0;opacity:.9}
+.app{
+  max-width:1080px;
+  margin:0 auto;
+  padding:12px;
+  display:grid;
+  grid-template-columns:390px 1fr;
+  gap:12px;
+}
+.card{
+  background:#fff;
+  border-radius:14px;
+  padding:14px;
+  box-shadow:0 4px 18px rgba(0,0,0,.06);
+}
+.card h2{
+  font-size:18px;
+  margin:0 0 12px;
+}
+label{
+  display:block;
+  font-size:14px;
+  color:#333;
+  margin:10px 0 5px;
+}
+input,select,textarea{
+  width:100%;
+  border:1px solid #d8dde6;
+  border-radius:10px;
+  padding:11px;
+  font-size:16px;
+  outline:none;
+  background:#fff;
+}
+textarea{min-height:72px;resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.types{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+}
+.type{
+  border:1px solid #d8dde6;
+  border-radius:10px;
+  padding:10px 6px;
+  text-align:center;
+  font-size:15px;
+  cursor:pointer;
+  user-select:none;
+}
+.type.active{
+  background:#1677ff;
+  color:#fff;
+  border-color:#1677ff;
+}
+.btn{
+  width:100%;
+  border:0;
+  border-radius:12px;
+  padding:13px;
+  font-size:16px;
+  color:#fff;
+  background:#1677ff;
+  margin-top:10px;
+}
+.btn.gray{background:#606975}
+.btn.green{background:#16a34a}
+.btn.red{background:#dc2626}
+.row-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.list{
+  margin-top:10px;
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+  overflow:hidden;
+}
+.item{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  padding:9px 10px;
+  border-bottom:1px solid #eee;
+  font-size:14px;
+  align-items:center;
+}
+.item:last-child{border-bottom:0}
+.del{
+  border:0;
+  background:#fee2e2;
+  color:#b91c1c;
+  border-radius:8px;
+  padding:6px 8px;
+}
+.preview-wrap{
+  overflow:auto;
+}
+#sheet{
+  width:794px;
+  min-height:1123px;
+  margin:0 auto;
+  background:#fff;
+  color:#000;
+  padding:30px 28px;
+  font-family:"SimSun","宋体",serif;
+}
+#sheet h1{
+  text-align:center;
+  font-size:26px;
+  margin:0 0 10px;
+  font-weight:500;
+}
+.p{
+  font-size:16px;
+  line-height:2;
+  margin:2px 0;
+}
+.indent{text-indent:2em}
+.u{
+  display:inline-block;
+  min-width:60px;
+  border-bottom:1px solid #000;
+  text-align:center;
+  padding:0 4px;
+  min-height:22px;
+}
+.u.long{min-width:170px}
+.u.mid{min-width:100px}
+.sign{
+  display:flex;
+  justify-content:space-between;
+  margin-top:4px;
+}
+table{
+  border-collapse:collapse;
+  width:100%;
+  table-layout:fixed;
+  font-size:14px;
+  margin-top:6px;
+}
+th,td{
+  border:1px solid #000;
+  text-align:center;
+  vertical-align:middle;
+  height:38px;
+  padding:2px;
+  word-break:break-all;
+}
+th{font-weight:400;height:62px}
+.note{font-weight:bold}
+.small{font-size:14px}
+@media(max-width:900px){
+  .app{display:block;padding:10px}
+  .card{margin-bottom:12px}
+  .preview-wrap{display:none}
+  .types{grid-template-columns:repeat(4,1fr)}
+}
+@media print{
+  body{background:#fff}
+  .header,.form-card{display:none!important}
+  .app{display:block;padding:0;max-width:none}
+  .card{box-shadow:none;padding:0;margin:0}
+  .preview-wrap{display:block;overflow:visible}
+  #sheet{width:210mm;min-height:297mm;padding:10mm 8mm}
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>教师请假代课单生成器</h1>
+  <p>手机填表单，自动生成学校代课单</p>
+</div>
+
+<div class="app">
+  <div class="card form-card">
+    <h2>一、填写请假信息</h2>
+
+    <label>请假原因</label>
+    <textarea id="reason" placeholder="例如：参加线上教研会、身体不适、家中有事等"></textarea>
+
+    <label>请假类型</label>
+    <div class="types" id="typeBox">
+      <div class="type active" data-type="公假">公假</div>
+      <div class="type" data-type="事假">事假</div>
+      <div class="type" data-type="病假">病假</div>
+      <div class="type" data-type="婚假">婚假</div>
+      <div class="type" data-type="丧假">丧假</div>
+      <div class="type" data-type="产假">产假</div>
+      <div class="type" data-type="护理假">护理假</div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <label>请假天数</label>
+        <input id="daysCount" placeholder="如：1">
+      </div>
+      <div>
+        <label>请假人</label>
+        <input id="person" placeholder="姓名">
+      </div>
+    </div>
+
+    <label>开始日期</label>
+    <input id="startDate" type="date">
+
+    <div class="grid2">
+      <div>
+        <label>开始周次</label>
+        <input id="startWeek" placeholder="如：14">
+      </div>
+      <div>
+        <label>开始星期</label>
+        <select id="startDay">
+          <option>一</option><option>二</option><option>三</option><option>四</option><option>五</option><option>六</option><option>日</option>
+        </select>
+      </div>
+    </div>
+
+    <label>结束日期</label>
+    <input id="endDate" type="date">
+
+    <div class="grid2">
+      <div>
+        <label>结束周次</label>
+        <input id="endWeek" placeholder="如：14">
+      </div>
+      <div>
+        <label>结束星期</label>
+        <select id="endDay">
+          <option>一</option><option>二</option><option>三</option><option>四</option><option>五</option><option>六</option><option>日</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <label>填写日期</label>
+        <input id="fillDate" type="date">
+      </div>
+      <div>
+        <label>代课周次</label>
+        <input id="tableWeek" placeholder="如：14">
+      </div>
+    </div>
+
+    <label>教务处签字</label>
+    <input id="officeSign" placeholder="可留空">
+
+    <h2 style="margin-top:18px">二、添加代课安排</h2>
+
+    <div class="grid2">
+      <div>
+        <label>星期</label>
+        <select id="courseDay">
+          <option value="星期一">星期一</option>
+          <option value="星期二">星期二</option>
+          <option value="星期三">星期三</option>
+          <option value="星期四">星期四</option>
+          <option value="星期五">星期五</option>
+        </select>
+      </div>
+      <div>
+        <label>节次</label>
+        <select id="coursePeriod">
+          <option>早自习</option>
+          <option>第1节</option><option>第2节</option><option>第3节</option><option>第4节</option>
+          <option>第5节</option><option>第6节</option><option>第7节</option><option>第8节</option>
+          <option>自主1</option><option>自主2</option><option>自主3</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <label>班级</label>
+        <input id="courseClass" placeholder="如：初一1班">
+      </div>
+      <div>
+        <label>代课教师</label>
+        <input id="teacher" placeholder="如：李老师">
+      </div>
+    </div>
+
+    <button class="btn green" onclick="addCourse()">添加这一节</button>
+
+    <div class="list" id="courseList"></div>
+
+    <div class="row-actions">
+      <button class="btn gray" onclick="saveData()">保存</button>
+      <button class="btn gray" onclick="loadData()">恢复</button>
+    </div>
+    <button class="btn" onclick="renderSheet();window.print()">生成PDF/保存图片</button>
+    <button class="btn red" onclick="clearAll()">清空重填</button>
+  </div>
+
+  <div class="card preview-wrap">
+    <div id="sheet"></div>
+  </div>
+</div>
+
+<script>
+let leaveType="公假";
+let courses=[];
+
+const periodNames=["早自习","第1节","第2节","第3节","第4节","第5节","第6节","第7节","第8节","自主1","自主2","自主3"];
+const days=["星期一","星期二","星期三","星期四","星期五"];
+
+document.querySelectorAll(".type").forEach(el=>{
+  el.onclick=()=>{
+    document.querySelectorAll(".type").forEach(x=>x.classList.remove("active"));
+    el.classList.add("active");
+    leaveType=el.dataset.type;
+    renderSheet();
+  }
+});
+
+function v(id){return document.getElementById(id).value.trim();}
+function dateParts(s){
+  if(!s)return {m:"",d:""};
+  const a=s.split("-");
+  return {m:String(Number(a[1])),d:String(Number(a[2]))};
+}
+function check(t){return leaveType===t?"☑":"□";}
+
+function addCourse(){
+  const day=v("courseDay"), period=v("coursePeriod"), cls=v("courseClass"), teacher=v("teacher");
+  if(!cls && !teacher){alert("至少填写班级或代课教师");return;}
+  const oldIndex=courses.findIndex(x=>x.day===day && x.period===period);
+  const item={day,period,cls,teacher};
+  if(oldIndex>=0) courses[oldIndex]=item; else courses.push(item);
+  document.getElementById("courseClass").value="";
+  document.getElementById("teacher").value="";
+  renderCourseList();
+  renderSheet();
+}
+
+function renderCourseList(){
+  const box=document.getElementById("courseList");
+  if(courses.length===0){box.innerHTML='<div class="item">还没有添加代课安排</div>';return;}
+  box.innerHTML=courses.map((x,i)=>`
+    <div class="item">
+      <span>${x.day} ${x.period}：${x.cls || "未填班级"} / ${x.teacher || "未填教师"}</span>
+      <button class="del" onclick="delCourse(${i})">删除</button>
+    </div>
+  `).join("");
+}
+
+function delCourse(i){
+  courses.splice(i,1);
+  renderCourseList();
+  renderSheet();
+}
+
+function cell(day,period,field){
+  const x=courses.find(c=>c.day===day && c.period===period);
+  if(!x)return "";
+  return field==="class"?x.cls:x.teacher;
+}
+
+function renderSheet(){
+  const sd=dateParts(v("startDate")), ed=dateParts(v("endDate")), fd=dateParts(v("fillDate"));
+  let rows="";
+  for(const d of days){
+    rows+=`<tr><td rowspan="2">${d}</td><td>班级</td>`;
+    for(const p of periodNames) rows+=`<td>${cell(d,p,"class")}</td>`;
+    rows+=`</tr><tr><td>代课教师</td>`;
+    for(const p of periodNames) rows+=`<td>${cell(d,p,"teacher")}</td>`;
+    rows+=`</tr>`;
+  }
+
+  document.getElementById("sheet").innerHTML=`
+    <h1>2026 年春代课单</h1>
+    <div class="p">学校领导：</div>
+    <div class="p indent">
+      本人确因 <span class="u long">${v("reason")}</span>，
+      特请（${check("公假")}公、${check("事假")}事、${check("病假")}病、${check("婚假")}婚、${check("丧假")}丧、${check("产假")}产、${check("护理假")}护理）假
+      <span class="u">${v("daysCount")}</span> 天。
+      请假 <span class="u">${sd.m}</span> 月 <span class="u">${sd.d}</span> 日
+      （第 <span class="u">${v("startWeek")}</span> 周星期 <span class="u">${v("startDay")}</span>）
+      至 <span class="u">${ed.m}</span> 月 <span class="u">${ed.d}</span> 日
+      （第 <span class="u">${v("endWeek")}</span> 周星期 <span class="u">${v("endDay")}</span>）止。
+      望准假！（住院病必须提供住院相关依据，<span class="note">请假人自己安排好班级代课老师，出现缺代记请假人的课。</span>）
+    </div>
+    <div class="p">教务处签字：<span class="u long">${v("officeSign")}</span></div>
+    <div class="sign p">
+      <span>请假人：<span class="u mid">${v("person")}</span></span>
+      <span>2026 年 <span class="u">${fd.m}</span> 月 <span class="u">${fd.d}</span> 日</span>
+    </div>
+    <div class="p small">请假人代课人员安排表：第 <span class="u">${v("tableWeek")}</span> 周</div>
+    <table>
+      <tr>
+        <th style="width:54px">星期<br>节次</th>
+        <th style="width:58px"></th>
+        <th>早自<br>习</th><th>第1<br>节</th><th>第2<br>节</th><th>第3<br>节</th><th>第4<br>节</th>
+        <th>第5<br>节</th><th>第6<br>节</th><th>第7<br>节</th><th>第8<br>节</th>
+        <th>自主<br>1</th><th>自主<br>2</th><th>自主<br>3</th>
+      </tr>
+      ${rows}
+    </table>
+  `;
+}
+
+function saveData(){
+  const data={
+    leaveType,courses,
+    fields:["reason","daysCount","person","startDate","startWeek","startDay","endDate","endWeek","endDay","fillDate","tableWeek","officeSign"].reduce((o,id)=>(o[id]=v(id),o),{})
+  };
+  localStorage.setItem("leaveFormData",JSON.stringify(data));
+  alert("已保存到本机浏览器。");
+}
+function loadData(){
+  const raw=localStorage.getItem("leaveFormData");
+  if(!raw){alert("没有保存记录");return;}
+  const data=JSON.parse(raw);
+  leaveType=data.leaveType||"公假";
+  courses=data.courses||[];
+  Object.entries(data.fields||{}).forEach(([id,val])=>{
+    const el=document.getElementById(id);
+    if(el)el.value=val;
+  });
+  document.querySelectorAll(".type").forEach(x=>{
+    x.classList.toggle("active",x.dataset.type===leaveType);
+  });
+  renderCourseList();
+  renderSheet();
+}
+function clearAll(){
+  if(!confirm("确定清空吗？"))return;
+  document.querySelectorAll("input,textarea").forEach(x=>x.value="");
+  courses=[];
+  leaveType="公假";
+  document.querySelectorAll(".type").forEach((x,i)=>x.classList.toggle("active",i===0));
+  renderCourseList();
+  renderSheet();
+}
+
+["reason","daysCount","person","startDate","startWeek","startDay","endDate","endWeek","endDay","fillDate","tableWeek","officeSign"].forEach(id=>{
+  document.getElementById(id).addEventListener("input",renderSheet);
+  document.getElementById(id).addEventListener("change",renderSheet);
+});
+renderCourseList();
+renderSheet();
+</script>
+</body>
+</html>
