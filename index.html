@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>代课单</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f5f7fb;font-family:-apple-system,BlinkMacSystemFont,"Microsoft YaHei",Arial,sans-serif;color:#111827}
+.wrap{max-width:1080px;margin:0 auto;padding:14px}
+.form-card{background:#fff;border-radius:16px;padding:18px;box-shadow:0 6px 24px rgba(15,23,42,.08);margin-bottom:14px}
+.form-title{text-align:center;font-size:30px;font-weight:800;letter-spacing:2px;margin:0 0 18px}
+.section-title{font-size:20px;font-weight:800;margin:18px 0 14px;padding-left:12px;border-left:5px solid #16a34a}
+label{display:block;font-size:15px;font-weight:700;color:#1f2937;margin:0 0 8px}
+input,select,textarea{width:100%;border:1px solid #d7dce5;border-radius:12px;padding:13px 14px;font-size:17px;outline:none;background:#fff;min-height:50px}
+textarea{min-height:78px;resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:#16a34a;box-shadow:0 0 0 3px rgba(22,163,74,.1)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.field{margin-bottom:14px}
+.type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.type{height:48px;border:1px solid #d7dce5;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;cursor:pointer;user-select:none}
+.type.active{background:#16a34a;color:#fff;border-color:#16a34a}
+.help{font-size:13px;color:#6b7280;margin-top:-4px;margin-bottom:12px;line-height:1.7}
+.add-row{display:grid;grid-template-columns:1fr 1fr 1.2fr 1.2fr;gap:14px}
+.btn{border:0;border-radius:14px;min-height:52px;font-size:18px;font-weight:800;cursor:pointer}
+.btn-add{width:100%;background:#fff;color:#16a34a;border:1px solid #16a34a;margin-top:4px}
+.btn-pdf{width:100%;background:#16a34a;color:#fff;margin-top:16px;height:58px;font-size:20px}
+.btn-blue{width:100%;background:#1677ff;color:#fff;margin-top:4px}
+.btn-light{background:#eef2f7;color:#374151}
+.btn-red{background:#fee2e2;color:#b91c1c}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.list{margin-top:14px}
+.item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px;border:1px solid #bbf7d0;background:#f0fdf4;border-radius:12px;margin-bottom:10px;font-size:16px;font-weight:700}
+.del{border:0;border-radius:10px;background:#fee2e2;color:#b91c1c;padding:9px 12px;font-weight:700}
+.tip{text-align:center;color:#6b7280;font-size:13px;margin-top:8px}
+.preview-card{background:#fff;border-radius:16px;padding:18px;box-shadow:0 6px 24px rgba(15,23,42,.08);overflow:auto}
+.schedule-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+.schedule-table th,.schedule-table td{border:1px solid #d1d5db;padding:6px;text-align:center}
+.schedule-table th{background:#f3f4f6}
+.schedule-table input{border:0;border-radius:0;padding:4px;min-height:34px;font-size:13px;text-align:center;background:transparent}
+.schedule-toolbar{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+details{border:1px solid #e5e7eb;border-radius:14px;padding:12px;background:#fbfbfc}
+summary{font-weight:800;font-size:17px;cursor:pointer}
+.quick-box{background:#f9fafb;border:1px dashed #cbd5e1;border-radius:12px;padding:12px;margin:10px 0}
+.example{background:#f8fafc;border-radius:10px;padding:10px;font-size:13px;line-height:1.7;color:#334155;white-space:pre-wrap}
+
+/* 生成出来的代课单 */
+#sheet{width:794px;min-height:1123px;margin:0 auto;background:#fff;color:#000;padding:34px 42px 28px;font-family:"SimSun","宋体","Songti SC",serif;font-size:17px;line-height:1.9}
+#sheet *{font-family:"SimSun","宋体","Songti SC",serif !important}
+#sheet h1{text-align:center;font-size:30px;font-weight:400;letter-spacing:3px;margin:0 0 16px;line-height:1.25}
+.p{margin:0;font-size:17px;line-height:1.95}
+.indent{text-indent:2em}
+.u{display:inline-flex;justify-content:center;align-items:flex-end;min-width:58px;height:23px;line-height:23px;border-bottom:1px solid #000;text-align:center;padding:0 4px;vertical-align:baseline;text-indent:0}
+.u.long{min-width:176px}.u.mid{min-width:100px}.u.short{min-width:42px}
+.note{font-weight:700}
+.sign{display:flex;align-items:center;justify-content:space-between;gap:20px}
+#sheet table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:6px;font-size:15px;line-height:1.25}
+#sheet th,#sheet td{border:1px solid #000;text-align:center;vertical-align:middle;height:42px;padding:2px 1px;word-break:break-all;font-weight:400}
+#sheet th{height:62px}
+.footer-space{height:14px}
+
+@media(max-width:760px){
+  .wrap{padding:10px}.form-card{padding:16px;border-radius:14px}.form-title{font-size:28px}
+  .grid2,.grid3,.grid4,.add-row,.schedule-toolbar{grid-template-columns:1fr 1fr;gap:12px}
+  .type-grid{grid-template-columns:repeat(3,1fr)}
+  .preview-card{display:none}
+  input,select,textarea{font-size:16px;min-height:52px}
+  .schedule-scroll{overflow:auto}
+  .schedule-table{min-width:760px}
+}
+@media(max-width:420px){.grid2,.grid3,.grid4,.add-row,.schedule-toolbar{grid-template-columns:1fr}}
+@media print{
+  @page{size:A4 portrait;margin:0}
+  body{background:#fff}.form-card{display:none!important}.wrap{padding:0;margin:0;max-width:none}
+  .preview-card{display:block!important;box-shadow:none;padding:0;margin:0;border-radius:0;overflow:visible}
+  #sheet{width:210mm;height:297mm;min-height:297mm;padding:10mm 11mm 8mm;font-size:17px;line-height:1.85}
+  #sheet h1{font-size:30px;margin-bottom:12px}.p{font-size:17px;line-height:1.88}
+  #sheet table{font-size:15px}#sheet th,#sheet td{height:40px}#sheet th{height:58px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="form-card">
+    <h1 class="form-title">代课单</h1>
+
+    <div class="section-title">一、我的课表</div>
+    <details id="schedulePanel" open>
+      <summary>快速录入 / 修改我的课表</summary>
+      <div class="help" style="margin-top:10px">第一次使用：把自己的课表按下面格式快速录入，点“解析到课表”，检查无误后点“保存我的课表”。保存后这里会自动折叠，以后直接请假即可。</div>
+
+      <div class="quick-box">
+        <label>快速录入课表</label>
+        <textarea id="quickInput" style="min-height:180px" placeholder="可以这样输入：
+周一 第2节 七年级1班
+周一 第4节 七年级2班
+周二 早自习 七年级1班
+周三 第1节 七年级4班"></textarea>
+        <div class="example">支持格式示例：
+周一 第2节 初二(4)语文
+星期二 早自习 初一(1)语文
+周三 1 初二4班
+周五 第5节 七年级1班
+
+也支持按天写：
+星期一：
+第2节 初二(4)语文
+第4节 初一(1)语文
+
+星期二：
+早自习 初一(1)语文
+第1节 初二(4)语文</div>
+        <button class="btn btn-blue" onclick="parseQuickSchedule()">解析到课表</button>
+      </div>
+
+      <div class="help">下面表格也可以直接点格子手动修改；识别错、漏填的地方直接改这里。</div>
+      <div class="schedule-scroll">
+        <table class="schedule-table" id="scheduleTable"></table>
+      </div>
+
+      <div class="schedule-toolbar">
+        <button class="btn btn-light" onclick="saveSchedule()">保存我的课表</button>
+        <button class="btn btn-light" onclick="loadSchedule()">恢复我的课表</button>
+        <button class="btn btn-red" onclick="clearSchedule()">清空课表</button>
+        <button class="btn btn-light" onclick="fillQuickFromSchedule()">从表格生成文本</button>
+      </div>
+    </details>
+
+    <div class="section-title">二、请假信息</div>
+
+    <div class="grid2">
+      <div class="field">
+        <label>请假原因</label>
+        <textarea id="reason" placeholder="例如：参加教研会"></textarea>
+      </div>
+      <div>
+        <div class="grid2">
+          <div class="field">
+            <label>请假天数</label>
+            <select id="daysMode">
+              <option value="auto">自动计算</option>
+              <option value="custom">自定义</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>天数结果</label>
+            <input id="days" placeholder="自动计算或手动填写">
+          </div>
+        </div>
+        <div class="help">规则：同一天上午到上午/下午到下午按0.5天；上午到下午按1天。跨日期按工作日粗略计算，可手动改。</div>
+        <div class="field">
+          <label>请假类型</label>
+          <div class="type-grid">
+            <div class="type active" data-v="公假">公假</div>
+            <div class="type" data-v="事假">事假</div>
+            <div class="type" data-v="病假">病假</div>
+            <div class="type" data-v="婚假">婚假</div>
+            <div class="type" data-v="丧假">丧假</div>
+            <div class="type" data-v="产假">产假</div>
+            <div class="type" data-v="护理假">护理假</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid4">
+      <div class="field"><label>开始日期</label><input id="startDate" type="date"></div>
+      <div class="field"><label>开始时段</label><select id="startHalf"><option value="上午">上午</option><option value="下午">下午</option></select></div>
+      <div class="field"><label>结束日期</label><input id="endDate" type="date"></div>
+      <div class="field"><label>结束时段</label><select id="endHalf"><option value="上午">上午</option><option value="下午">下午</option></select></div>
+    </div>
+
+    <div class="grid4">
+      <div class="field"><label>开始周次</label><input id="startWeek" placeholder="如：12"></div>
+      <div class="field"><label>开始星期</label><input id="startDay" placeholder="自动生成" readonly></div>
+      <div class="field"><label>结束周次</label><input id="endWeek" placeholder="如：12"></div>
+      <div class="field"><label>结束星期</label><input id="endDay" placeholder="自动生成" readonly></div>
+    </div>
+
+    <div class="grid3">
+      <div class="field"><label>填写日期</label><input id="fillDate" type="date"></div>
+      <div class="field"><label>代课周次</label><input id="tableWeek" placeholder="如：12"></div>
+      <div class="field"><label>教务处签字</label><input id="sign" placeholder="可留空"></div>
+    </div>
+
+    <div class="field"><label>请假人</label><input id="person" placeholder="姓名"></div>
+
+    <button class="btn btn-blue" onclick="autoAddFromSchedule()">根据请假时间，一键加入课表课程</button>
+    <div class="tip">先保存自己的课表，再点这里，系统会自动把请假时段内有课的班级加入代课安排。</div>
+
+    <div class="section-title">三、添加/修改代课安排</div>
+
+    <div class="add-row">
+      <div class="field"><label>星期</label><select id="cday"><option>星期一</option><option>星期二</option><option>星期三</option><option>星期四</option><option>星期五</option></select></div>
+      <div class="field"><label>节次</label><select id="cperiod"><option>早自习</option><option>第1节</option><option>第2节</option><option>第3节</option><option>第4节</option><option>第5节</option><option>第6节</option><option>第7节</option><option>第8节</option><option>自主1</option><option>自主2</option><option>自主3</option></select></div>
+      <div class="field"><label>班级</label><input id="cls" placeholder="例如：七年级1班"></div>
+      <div class="field"><label>代课教师</label><input id="teacher" placeholder="例如：李老师"></div>
+    </div>
+
+    <button class="btn btn-add" onclick="addItem()">＋ 添加这一节</button>
+    <div class="list" id="list"></div>
+
+    <button class="btn btn-pdf" onclick="renderSheet();window.print()">生成 PDF</button>
+    <div class="tip">生成后可保存为PDF或截图上传企业微信</div>
+
+    <div class="actions">
+      <button class="btn btn-light" onclick="saveData()">保存请假内容</button>
+      <button class="btn btn-light" onclick="loadData()">恢复请假内容</button>
+      <button class="btn btn-red" onclick="clearAll()">清空请假内容</button>
+      <button class="btn btn-light" onclick="renderSheet()">刷新预览</button>
+    </div>
+  </div>
+
+  <div class="preview-card">
+    <div id="sheet"></div>
+  </div>
+</div>
+
+<script>
+let leaveType="公假";
+let arr=[];
+const daysArr=["星期一","星期二","星期三","星期四","星期五"];
+const periods=["早自习","第1节","第2节","第3节","第4节","第5节","第6节","第7节","第8节","自主1","自主2","自主3"];
+const cnWeek=["日","一","二","三","四","五","六"];
+const weekdayMap={"一":"星期一","二":"星期二","三":"星期三","四":"星期四","五":"星期五","六":"星期六","日":"星期日"};
+let schedule={};
+
+function emptySchedule(){const s={};daysArr.forEach(d=>s[d]={});return s}
+schedule=emptySchedule();
+
+function v(id){return document.getElementById(id).value.trim()}
+function setv(id,val){document.getElementById(id).value=val}
+function datePart(s){if(!s)return {m:"",d:""};const a=s.split("-");return {m:String(Number(a[1])),d:String(Number(a[2]))}}
+function checked(t){return leaveType===t?"☑":"□"}
+
+function getWeekday(s){if(!s)return "";const d=new Date(s+"T00:00:00");return cnWeek[d.getDay()]}
+function workdayCount(start,end){const s=new Date(start+"T00:00:00"),e=new Date(end+"T00:00:00");if(isNaN(s)||isNaN(e)||e<s)return 0;let count=0,cur=new Date(s);while(cur<=e){const day=cur.getDay();if(day!==0&&day!==6)count++;cur.setDate(cur.getDate()+1)}return count}
+function autoDays(){if(v("daysMode")==="custom")return;const s=v("startDate"),e=v("endDate"),sh=v("startHalf"),eh=v("endHalf");if(!s||!e)return;const sd=new Date(s+"T00:00:00"),ed=new Date(e+"T00:00:00");if(ed<sd){setv("days","");return}let result=0;if(s===e){result=(sh==="上午"&&eh==="下午")?1:0.5}else{result=workdayCount(s,e);if(sh==="下午")result-=0.5;if(eh==="上午")result-=0.5;if(result<0)result=0}setv("days",String(result))}
+function updateAutoFields(){const s=v("startDate"),e=v("endDate");setv("startDay",getWeekday(s));setv("endDay",getWeekday(e));autoDays();renderSheet()}
+
+document.querySelectorAll(".type").forEach(el=>{el.onclick=()=>{document.querySelectorAll(".type").forEach(x=>x.classList.remove("active"));el.classList.add("active");leaveType=el.dataset.v;renderSheet()}});
+
+function normalizeDay(s){
+  s=s.replace(/\s/g,"");
+  if(/星期一|周一|礼拜一/.test(s))return "星期一";
+  if(/星期二|周二|礼拜二/.test(s))return "星期二";
+  if(/星期三|周三|礼拜三/.test(s))return "星期三";
+  if(/星期四|周四|礼拜四/.test(s))return "星期四";
+  if(/星期五|周五|礼拜五/.test(s))return "星期五";
+  return "";
+}
+function normalizePeriod(s){
+  s=s.replace(/\s/g,"");
+  if(/晨读|早读|早自习|早自|早习/.test(s))return "早自习";
+  if(/自主学习?1|自主1/.test(s))return "自主1";
+  if(/自主学习?2|自主2/.test(s))return "自主2";
+  if(/自主学习?3|自主3/.test(s))return "自主3";
+  if(/第?1节|^1$/.test(s))return "第1节";
+  if(/第?2节|^2$/.test(s))return "第2节";
+  if(/第?3节|^3$/.test(s))return "第3节";
+  if(/第?4节|^4$/.test(s))return "第4节";
+  if(/第?5节|^5$/.test(s))return "第5节";
+  if(/第?6节|^6$/.test(s))return "第6节";
+  if(/第?7节|^7$/.test(s))return "第7节";
+  if(/第?8节|^8$/.test(s))return "第8节";
+  return "";
+}
+function cleanCourse(s){
+  return (s||"").replace(/^\s*[:：\-—,，、]+/,"").replace(/\s+/g,"").replace(/语早/g,"语文").trim();
+}
+function renderScheduleEditor(){
+  let html='<tr><th>节次</th>'+daysArr.map(d=>`<th>${d}</th>`).join("")+'</tr>';
+  periods.forEach(p=>{
+    html+=`<tr><th>${p}</th>`;
+    daysArr.forEach(d=>{
+      const val=(schedule[d]&&schedule[d][p])?schedule[d][p]:"";
+      html+=`<td><input data-day="${d}" data-period="${p}" value="${val}" placeholder=""></td>`;
+    });
+    html+='</tr>';
+  });
+  document.getElementById("scheduleTable").innerHTML=html;
+}
+function collectSchedule(){const newSchedule=emptySchedule();document.querySelectorAll("#scheduleTable input").forEach(inp=>{const d=inp.dataset.day,p=inp.dataset.period,val=inp.value.trim();if(val)newSchedule[d][p]=val});schedule=newSchedule}
+function parseQuickSchedule(){
+  const text=v("quickInput");
+  if(!text){alert("请先输入课表内容");return}
+  const newSchedule=emptySchedule();
+  let currentDay="";
+  let count=0;
+
+  text.split(/\n+/).forEach(raw=>{
+    let line=raw.trim();
+    if(!line)return;
+
+    const dayInLine=normalizeDay(line);
+    if(dayInLine){
+      currentDay=dayInLine;
+      line=line.replace(/星期[一二三四五]|周[一二三四五]|礼拜[一二三四五]/g,"").replace(/[：:]/g," ").trim();
+      if(!line)return;
+    }
+
+    let day=currentDay;
+    let period="";
+
+    const parts=line.split(/\s+/).filter(Boolean);
+    for(const part of parts){
+      const d=normalizeDay(part);
+      if(d)day=d;
+      const p=normalizePeriod(part);
+      if(p)period=p;
+    }
+
+    if(!period){
+      const m=line.match(/(早自习|早读|晨读|第?\d节|自主学习?1|自主学习?2|自主学习?3|自主1|自主2|自主3|\b[1-8]\b)/);
+      if(m)period=normalizePeriod(m[0]);
+    }
+
+    if(day&&period){
+      let course=line
+        .replace(/星期[一二三四五]|周[一二三四五]|礼拜[一二三四五]/g,"")
+        .replace(/早自习|早读|晨读|第?\d节|自主学习?1|自主学习?2|自主学习?3|自主1|自主2|自主3|\b[1-8]\b/g,"");
+      course=cleanCourse(course);
+      if(course){
+        newSchedule[day][period]=course;
+        count++;
+      }
+    }
+  });
+
+  schedule=newSchedule;
+  renderScheduleEditor();
+  alert(count?`已解析 ${count} 节课，请检查表格后保存。`:"没有解析到课程，请按示例格式输入。");
+}
+function fillQuickFromSchedule(){
+  collectSchedule();
+  let lines=[];
+  daysArr.forEach(day=>{
+    let dayLines=[];
+    periods.forEach(p=>{
+      const c=schedule[day]&&schedule[day][p];
+      if(c)dayLines.push(`${p} ${c}`);
+    });
+    if(dayLines.length){
+      lines.push(`${day}：`);
+      lines=lines.concat(dayLines);
+      lines.push("");
+    }
+  });
+  document.getElementById("quickInput").value=lines.join("\n").trim();
+}
+function saveSchedule(){collectSchedule();localStorage.setItem("myScheduleData",JSON.stringify(schedule));localStorage.setItem("scheduleSaved","1");document.getElementById("schedulePanel").open=false;alert("课表已保存。以后这里会默认折叠，需要修改时再点开。")}
+function loadSchedule(){const raw=localStorage.getItem("myScheduleData");if(!raw){alert("还没有保存过课表");return}schedule=JSON.parse(raw);renderScheduleEditor()}
+function clearSchedule(){if(!confirm("确定清空我的课表吗？"))return;schedule=emptySchedule();localStorage.removeItem("myScheduleData");localStorage.removeItem("scheduleSaved");renderScheduleEditor();document.getElementById("schedulePanel").open=true}
+
+function periodsForHalf(half){return half==="上午"?["早自习","第1节","第2节","第3节","第4节"]:["第5节","第6节","第7节","第8节","自主1","自主2","自主3"]}
+function dateRangeDays(start,end){const list=[];const s=new Date(start+"T00:00:00"),e=new Date(end+"T00:00:00");if(isNaN(s)||isNaN(e)||e<s)return list;let cur=new Date(s);while(cur<=e){const w=cnWeek[cur.getDay()];if(weekdayMap[w])list.push({date:new Date(cur),day:weekdayMap[w]});cur.setDate(cur.getDate()+1)}return list}
+function localYMD(dateObj){const y=dateObj.getFullYear();const m=String(dateObj.getMonth()+1).padStart(2,"0");const d=String(dateObj.getDate()).padStart(2,"0");return `${y}-${m}-${d}`}
+function getPeriodRangeForDate(dateObj,startDate,endDate,startHalf,endHalf){
+  const ymd=localYMD(dateObj);
+  if(startDate===endDate){if(startHalf==="上午"&&endHalf==="上午")return periodsForHalf("上午");if(startHalf==="下午"&&endHalf==="下午")return periodsForHalf("下午");return periods}
+  if(ymd===startDate)return startHalf==="上午"?periods:periodsForHalf("下午");
+  if(ymd===endDate)return endHalf==="上午"?periodsForHalf("上午"):periods;
+  return periods;
+}
+function autoAddFromSchedule(){
+  collectSchedule();localStorage.setItem("myScheduleData",JSON.stringify(schedule));
+  const s=v("startDate"),e=v("endDate");if(!s||!e){alert("请先选择开始日期和结束日期");return}
+  let added=0;
+  dateRangeDays(s,e).forEach(obj=>{
+    getPeriodRangeForDate(obj.date,s,e,v("startHalf"),v("endHalf")).forEach(p=>{
+      const cls=schedule[obj.day]&&schedule[obj.day][p];
+      if(cls){
+        const item={day:obj.day,period:p,cls:cls,teacher:""};
+        const idx=arr.findIndex(x=>x.day===item.day&&x.period===item.period);
+        if(idx>=0)arr[idx]=item;else arr.push(item);
+        added++;
+      }
+    });
+  });
+  renderList();renderSheet();
+  alert(added?`已根据课表加入 ${added} 节课，请补充代课教师。`:"这个时间段课表里没有检测到课程。请先快速录入并保存课表。");
+}
+
+function addItem(){const item={day:v("cday"),period:v("cperiod"),cls:v("cls"),teacher:v("teacher")};if(!item.cls&&!item.teacher){alert("请填写班级或代课教师");return}const idx=arr.findIndex(x=>x.day===item.day&&x.period===item.period);if(idx>=0)arr[idx]=item;else arr.push(item);document.getElementById("cls").value="";document.getElementById("teacher").value="";renderList();renderSheet()}
+function delItem(i){arr.splice(i,1);renderList();renderSheet()}
+function updateTeacher(i,val){arr[i].teacher=val;renderSheet()}
+function renderList(){
+  const box=document.getElementById("list");
+  if(arr.length===0){box.innerHTML="";return}
+  box.innerHTML=arr.map((x,i)=>`
+    <div class="item">
+      <span>${i+1}. ${x.day}　${x.period}　${x.cls||"未填班级"}</span>
+      <input style="max-width:150px;min-height:40px;font-size:15px" placeholder="代课教师" value="${x.teacher||""}" oninput="updateTeacher(${i},this.value)">
+      <button class="del" onclick="delItem(${i})">删除</button>
+    </div>`).join("");
+}
+function getCell(day,period,type){const x=arr.find(a=>a.day===day&&a.period===period);if(!x)return "";return type==="class"?x.cls:x.teacher}
+
+function renderSheet(){
+  const sd=datePart(v("startDate")),ed=datePart(v("endDate")),fd=datePart(v("fillDate"));
+  const startTime=(sd.m&&sd.d)?`${sd.m} 月 ${sd.d} 日${v("startHalf")}`:"";
+  const endTime=(ed.m&&ed.d)?`${ed.m} 月 ${ed.d} 日${v("endHalf")}`:"";
+  let rows="";
+  daysArr.forEach(day=>{rows+=`<tr><td rowspan="2">${day}</td><td>班级</td>`;periods.forEach(p=>rows+=`<td>${getCell(day,p,"class")}</td>`);rows+=`</tr><tr><td>代课<br>教师</td>`;periods.forEach(p=>rows+=`<td>${getCell(day,p,"teacher")}</td>`);rows+=`</tr>`});
+  document.getElementById("sheet").innerHTML=`
+    <h1>代课单</h1>
+    <div class="p">学校领导：</div>
+    <div class="p indent">本人确因 <span class="u long">${v("reason")}</span>，特请（${checked("公假")}公、${checked("事假")}事、${checked("病假")}病、${checked("婚假")}婚、${checked("丧假")}丧、${checked("产假")}产、${checked("护理假")}护理）假 <span class="u short">${v("days")}</span> 天。请假时间：<span class="u long">${startTime}</span>（第 <span class="u short">${v("startWeek")}</span> 周星期 <span class="u short">${v("startDay")}</span>）至 <span class="u long">${endTime}</span>（第 <span class="u short">${v("endWeek")}</span> 周星期 <span class="u short">${v("endDay")}</span>）止。望准假！（住院病必须提供住院相关依据，<span class="note">请假人自己安排好班级代课老师，出现缺代记请假人的课。</span>）</div>
+    <div class="p">教务处签字：<span class="u long">${v("sign")}</span></div>
+    <div class="sign p"><span>请假人：<span class="u mid">${v("person")}</span></span><span>${fd.m?fd.m+" 月 "+fd.d+" 日":""}</span></div>
+    <div class="p">请假人代课人员安排表：第 <span class="u short">${v("tableWeek")}</span> 周</div>
+    <table><tr><th style="width:56px">星期<br>节次</th><th style="width:58px"></th><th>早自习</th><th>第1节</th><th>第2节</th><th>第3节</th><th>第4节</th><th>第5节</th><th>第6节</th><th>第7节</th><th>第8节</th><th>自主1</th><th>自主2</th><th>自主3</th></tr>${rows}</table><div class="footer-space"></div>`;
+}
+
+function saveData(){
+  collectSchedule();
+  const data={leaveType,arr,fields:{reason:v("reason"),daysMode:v("daysMode"),days:v("days"),person:v("person"),startDate:v("startDate"),startHalf:v("startHalf"),endDate:v("endDate"),endHalf:v("endHalf"),startWeek:v("startWeek"),startDay:v("startDay"),endWeek:v("endWeek"),endDay:v("endDay"),fillDate:v("fillDate"),tableWeek:v("tableWeek"),sign:v("sign")}};
+  localStorage.setItem("daikeDataQuick",JSON.stringify(data));
+  localStorage.setItem("myScheduleData",JSON.stringify(schedule));
+  alert("请假内容和课表已保存");
+}
+function loadData(){
+  const raw=localStorage.getItem("daikeDataQuick");if(!raw){alert("没有保存记录");return}
+  const data=JSON.parse(raw);leaveType=data.leaveType||"公假";arr=data.arr||[];
+  Object.entries(data.fields||{}).forEach(([k,val])=>{const el=document.getElementById(k);if(el)el.value=val});
+  document.querySelectorAll(".type").forEach(x=>x.classList.toggle("active",x.dataset.v===leaveType));
+  renderList();updateAutoFields();
+}
+function clearAll(){
+  if(!confirm("确定清空请假表单和代课安排吗？课表不会清空。"))return;
+  document.querySelectorAll("input,textarea,select").forEach(el=>{
+    if(el.closest("#scheduleTable")||el.id==="quickInput")return;
+    if(el.id==="cday")el.value="星期一";
+    else if(el.id==="cperiod")el.value="早自习";
+    else if(el.id==="startHalf"||el.id==="endHalf")el.value="上午";
+    else if(el.id==="daysMode")el.value="auto";
+    else el.value="";
+  });
+  leaveType="公假";arr=[];
+  document.querySelectorAll(".type").forEach((x,i)=>x.classList.toggle("active",i===0));
+  renderList();updateAutoFields();
+}
+
+["startDate","endDate","startHalf","endHalf","daysMode"].forEach(id=>document.getElementById(id).addEventListener("change",updateAutoFields));
+["reason","days","person","startWeek","endWeek","fillDate","tableWeek","sign"].forEach(id=>{document.getElementById(id).addEventListener("input",renderSheet);document.getElementById(id).addEventListener("change",renderSheet)});
+
+(function init(){
+  const savedSchedule=localStorage.getItem("myScheduleData");
+  if(savedSchedule){try{schedule=JSON.parse(savedSchedule)}catch(e){schedule=emptySchedule()}}
+  renderScheduleEditor();renderList();updateAutoFields();
+  if(localStorage.getItem("scheduleSaved")==="1")document.getElementById("schedulePanel").open=false;
+})();
+</script>
+</body>
+</html>
